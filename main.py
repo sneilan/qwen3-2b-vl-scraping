@@ -12,7 +12,7 @@ from prompt import get_prompt
 
 # Configure logging
 logging.basicConfig(
-    level=logging.INFO,
+    level=logging.DEBUG,
     format='{"level": "%(levelname)s", "message": "%(message)s"}'
 )
 
@@ -91,9 +91,7 @@ kv_cache_bytes = 2 * num_layers * hidden_dim * num_input_tokens * bytes_per_para
 kv_cache_mb = kv_cache_bytes / (1024 ** 2)
 kv_cache_gb = kv_cache_bytes / (1024 ** 3)
 
-print(kv_cache_gb)
-import ipdb
-ipdb.set_trace()
+logging.info("Predicted kv cache in gb" + str(kv_cache_gb))
 
 # 3.0 gb baseline. - 
 # Qwen/Qwen3-VL-2B-Instruct - 2 billion params. 4 bit. = 1 gb.
@@ -127,8 +125,8 @@ def monitor_loop():
         logging.info(f"{mem.cpu_gb:.2f}, {mem.gpu_gb:.2f}")
         time.sleep(0.1)
 
-memory_monitor = threading.Thread(target=monitor_loop, daemon=True)
-memory_monitor.start()
+#memory_monitor = threading.Thread(target=monitor_loop, daemon=True)
+# memory_monitor.start()
 
 # Stream tokens as they're generated
 logging.info("Model output (streaming):")
@@ -136,10 +134,11 @@ output_text: str = ""
 token_count = 0
 for text in streamer:
     output_text += text
+    logging.info(text)
     token_count += 1
 
 generation_thread.join()
-memory_monitor.join()
+#memory_monitor.join()
 logging.info("Inference complete")
 
 # Parse model output to get marker number
@@ -148,10 +147,10 @@ match = re.search(r'\b(\d+)\b', output_text)
 # Guard clause: no match found
 if not match:
     raise Exception("LLM did not output a marker number")
-if (marker_number := int(match.group(1))) >= len(elements_data):
-    raise Exception(f"Invalid marker number: {marker_number} (max: {len(elements_data)-1})")
+if (marker_number := int(match.group(1))) >= len(target_homepage.elements_data):
+    raise Exception(f"Invalid marker number: {marker_number} (max: {len(target_homepage.elements_data)-1})")
 
 
-logging.info("Script completed")
+logging.info("Script completed. Found " + str(match))
 
 

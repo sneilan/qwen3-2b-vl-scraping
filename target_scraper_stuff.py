@@ -1,3 +1,4 @@
+import logging
 from pydantic import BaseModel
 from utils.browser import BrowserSession, ElementData
 from typing import List
@@ -20,7 +21,7 @@ def get_annotated_screenshot_of_target_homepage() -> TargetHomepage:
 
     # Capture screenshot and detect elements
     screenshot_path = "target_screenshot.png"
-    screenshot_path, elements_data = browser_session.capture_screenshot()
+    screenshot_path, elements_data = browser_session.capture_screenshot(screenshot_path)
     annotated_screenshot_path = "target_screenshot_annotated.png"
     browser_session.annotate_screenshot(screenshot_path, elements_data, annotated_screenshot_path)
     logging.info(f"Screenshot saved. Prepping inputs.")
